@@ -6,23 +6,52 @@
 <title>Inky Vibes Compact Gallery</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;background:#0d0d0d;color:#eaeaea;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto}
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  background:#0d0d0d;
+  color:#eaeaea;
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto
+}
 
-:root{ --h: 420px; }
-@media (max-width:520px){ :root{ --h: 360px; } }
+/* Updated Wrap to fill viewport height dynamically */
+.wrap{
+  max-width:1100px;
+  margin:0 auto;
+  padding:12px;
+  padding-bottom:calc(12px + env(safe-area-inset-bottom));
+  height:100vh;
+  height:100dvh; /* Adapts to iOS Safari address bar */
+  display:flex;
+  flex-direction:column;
+}
 
-.wrap{max-width:1100px;margin:0 auto;padding:12px}
-.shell{border:1px solid rgba(255,255,255,.10);border-radius:16px;overflow:hidden;background:#000}
+/* Shell now grows to fill the wrap, eliminating bottom blank space */
+.shell{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  overflow:hidden;
+  background:#000;
+  display:flex;
+  flex-direction:column;
+  flex:1; 
+}
 
 .top{
-  height:44px;display:flex;align-items:center;justify-content:space-between;
+  height:44px;
+  flex: 0 0 44px;
+  display:flex;align-items:center;justify-content:space-between;
   padding:0 12px;border-bottom:1px solid rgba(255,255,255,.06);
 }
 .title{font-size:12px;letter-spacing:.18em;color:#cfcfcf;text-transform:uppercase}
 .count{font-size:12px;letter-spacing:.18em;color:#9a9a9a}
 
+/* Stage now uses flex:1 to absorb all available space instead of a fixed height */
 .stage{
-  position:relative;height:var(--h);
+  position:relative;
+  flex:1; 
+  min-height:200px;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;
 }
@@ -59,6 +88,7 @@ html,body{margin:0;background:#0d0d0d;color:#eaeaea;font-family:-apple-system,Bl
 .thumbs{
   display:flex;gap:8px;padding:10px;overflow-x:auto;
   border-top:1px solid rgba(255,255,255,.06);background:#0b0b0b;
+  flex: 0 0 auto;
 }
 .thumb{
   width:56px;height:42px;flex:0 0 auto;border-radius:10px;overflow:hidden;
@@ -79,7 +109,8 @@ html,body{margin:0;background:#0d0d0d;color:#eaeaea;font-family:-apple-system,Bl
 
 .lbStage{
   position:relative;
-  width:100vw; height:100vh;
+  width:100vw; 
+  height:100vh; height:100dvh;
   display:flex; align-items:center; justify-content:center;
   overflow:hidden;
 }
@@ -181,10 +212,8 @@ html,body{margin:0;background:#0d0d0d;color:#eaeaea;font-family:-apple-system,Bl
     probeMax: 500,
     slideMs: 2500,
 
-    // ✅ otomatik güncelleme
-    watchIntervalMs: 4000,      // 4 sn'de bir "yeni foto var mı" bakar
-    reconcileIntervalMs: 30000, // 30 sn'de bir "silinmiş mi" kontrolü yapar
-
+    watchIntervalMs: 4000,     
+    reconcileIntervalMs: 30000, 
     imageTimeoutMs: 1800,
   };
 
@@ -369,13 +398,12 @@ html,body{margin:0;background:#0d0d0d;color:#eaeaea;font-family:-apple-system,Bl
     for (let i = 1; i <= CONFIG.probeMax; i++){
       const f = fileFor(i);
       if (await isRealImage(f)) found.push(f);
-      else break; // ✅ ilk eksikte dur
+      else break; 
     }
     return found;
   }
 
   async function watchForNewImages(){
-    // ✅ sadece "sonraki" dosyayı kontrol eder → hızlı
     let nextIndex = IMAGES.length + 1;
     if (nextIndex < 1) nextIndex = 1;
 
@@ -393,7 +421,6 @@ html,body{margin:0;background:#0d0d0d;color:#eaeaea;font-family:-apple-system,Bl
   }
 
   async function reconcileDeletionsFromEnd(){
-    // ✅ sadece sondan kontrol eder (01..04 varken 04 silinirse düşer)
     while (IMAGES.length > 0){
       const last = IMAGES[IMAGES.length - 1];
       const ok = await isRealImage(last);
@@ -412,7 +439,6 @@ html,body{margin:0;background:#0d0d0d;color:#eaeaea;font-family:-apple-system,Bl
     idx = 0;
     render();
 
-    // ✅ otomatik update
     setInterval(watchForNewImages, CONFIG.watchIntervalMs);
     setInterval(reconcileDeletionsFromEnd, CONFIG.reconcileIntervalMs);
   }
